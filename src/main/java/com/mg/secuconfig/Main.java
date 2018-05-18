@@ -9,11 +9,11 @@ import com.mg.secuconfig.utils.*;
 public class Main {
 
   public static void main(String[] args) {    
-    /*
+    
     args = new String[2];
     args[0] = "-p";
     args[1] = "/sdcard/JavaNIDE/TestService";   
-    */
+    
     int num_param = args.length;
     switch(num_param){
      case 0:
@@ -58,6 +58,9 @@ public class Main {
                switch(m.get_type()){
                  case "Tomcat":
                    TomcatParser t_parser = new TomcatParser(m);
+                   break;
+                 case "nginx":
+                   nginxParser n_parser = new nginxParser(m);
                    break;
                  default :
                    System.out.println("Unknown Middle ware");

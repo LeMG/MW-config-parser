@@ -32,6 +32,18 @@ public class Middleware {
   private void set_MWType(){
     if(is_Tomcat())
       type="Tomcat";
+    else if(is_nginx())
+      type = "nginx";
+  }
+  
+  private boolean is_nginx(){
+    for(File cur : arr_config){
+      String name = cur.getName();
+      if(name.compareTo("nginx.conf")==0){
+        return true;
+      }
+    }
+    return false;
   }
   
   private boolean is_Tomcat(){
