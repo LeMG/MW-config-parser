@@ -73,7 +73,7 @@ public class nginxParser {
 		       stack.remove(top);
 		       top--;
 	       }else{
-		       System.out.println("cur conf : "+conf);
+		       //System.out.println("cur conf : "+conf);
 		       String[] arr_v = conf.split(" ");
 		       String key = arr_v[0];
 		       String value = "";
@@ -84,7 +84,7 @@ public class nginxParser {
 	       }
             }
 	    //test print
-	    root.print("");
+	    //root.print("");
         
             /*
             process owner -> user
@@ -95,25 +95,141 @@ public class nginxParser {
             server name -> server_tokens off;
             sym link -> disable_symlinks on;
             file permission(upload dir, extension) -> location 	*php{return 403;}
+	    */
+	    System.out.println("\tProcess owner : "+root.findValue("user"));
+	    
+	    ArrayList<confNode> arr_node = new ArrayList<confNode>();
+	    root.findNodes("location", arr_node);
+	    String autoindex = "";
+	    for(confNode cn : arr_node){
+		  String v = cn.findValue("autoindex");
+		  if(v!=null&&v.startsWith("on"))
+			 autoindex+=cn.name+"/split/"; 
+	    }
+	    if(autoindex.length()==0){
+		    System.out.println("\tDir listing : off");
+	    }else{
+		    String[] arr_loc = autoindex.split("/split/");
+		    System.out.print("\tUsing dir listing : ");
+		    for(String loc:arr_loc){
+			    System.out.print(loc+", ");
+		    }
+		    System.out.println();
+	    }
+	    arr_node.clear();
+	    
+	    root.findNodes("server",arr_node);
+	    System.out.println("\tErro page config");
+	    for(confNode cn:arr_node){
+		    System.out.println("\t\t"+cn.name+"("+cn.findValue("server_name")+")");
+		    String[] error_group = cn.findValue("error_page").split("/split/");
+		    for(String v:error_group)
+			    System.out.println("\t\t\t"+v);
+	    }
+	    arr_node.clear();
+	    
+	    root.findNodes("location",arr_node);
+	    System.out.println("\tConfig for limitting http methods");
+	    for(confNode cn:arr_node){
+		    ArrayList<confNode> arr_limit = new ArrayList<confNode>();
+		    cn.findNodes("limit_except",arr_limit);
+		    if(arr_limit.size()>0){
+			    System.out.println("\t\t"+cn.name+"{");
+			    for(confNode limit:arr_limit){
+				    System.out.println("\t\t\t"+limit.name);
+				    String deny = limit.findValue("deny");
+				    String allow = limit.findValue("allow");
+				    System.out.println("\t\t\t\tdeny "+deny);
+				    System.out.println("\t\t\t\tallow "+allow);
+			    }
+			    System.out.println("\t\t}");
+		    }
+	    }
+	    arr_node.clear();
+	    
+	    root.findNodes("http",arr_node);
+	    for(confNode cn:arr_node){
+		    String server_tokens = cn.findValue("server_tokens");
+		    if(server_tokens!=null){
+			    System.out.println("\tserver_tokens("+cn.name+") : "+server_tokens);
+		    }
+	    }
+	    arr_node.clear();
+	    root.findNodes("server",arr_node);
+	    for(confNode cn:arr_node){
+		    String server_tokens = cn.findValue("server_tokens");
+		    if(server_tokens!=null){
+			    System.out.println("\tserver_tokens("+cn.name+") : "+server_tokens);
+		    }
+	    }
+	    arr_node.clear();
+	    root.findNodes("location", arr_node);
+	    for(confNode cn : arr_node){
+		    String server_tokens = cn.findValue("server_tokens");
+		    if(server_tokens!=null){
+			    System.out.println("\tserver_tokens("+cn.name+") : "+server_tokens);
+		    }
+	    }
+	    arr_node.clear();
 
-	     */
-	    String proc_owner = "";
-	    root.find("user",proc_owner);
-	    String dir_listing = "";
-	    root.find("autoindex",dir_listing);
-	    String error_page = "";
-	    root.find("error_page",error_page);
-	    String http_method = "";
-	    root.find("deny",http_method);
-	    String deploy_dir = "";
-	    root.find("root",deploy_dir);
-	    String server_name = "";
-	    root.find("server_tokens",server_name);
-	    String sym_link = "";
-	    root.find("disable_symlinks",sym_link);
-	    String file_permission = "";
-	    root.find("return",file_permission);
-            
+	    root.findNodes("http", arr_node);
+	    ArrayList<String> arr_symlink = new ArrayList<String>();
+
+	    for(confNode cn : arr_node){
+		    String http_symlink = cn.findValue("disable_symlinks");
+		    if(http_symlink!=null){
+			    arr_symlink.add("disable_symlinks("+cn.name+") : "+http_symlink);
+		    }
+	    }
+	    arr_node.clear();
+	    root.findNodes("server",arr_node);
+	    for(confNode cn : arr_node){
+		   String server_symlink = cn.findValue("disable_symlinks");
+		   if(server_symlink!=null){
+			   arr_symlink.add("disable_symlinks("+cn.name+") : "+server_symlink);
+		   }
+	    }
+	    arr_node.clear();
+	    root.findNodes("location",arr_node);
+	    for(confNode cn:arr_node){
+		    String loc_symlink = cn.findValue("disable_symlinks");
+		    if(loc_symlink!=null){
+			    arr_symlink.add("disable_symlinks("+cn.name+") : "+loc_symlink);
+		    }
+	    }
+	    if(arr_symlink.size()==0){
+		    System.out.println("\tdisable_symlinks : on(defualt)");
+	    }else{
+		    for(String conf:arr_symlink)
+			    System.out.println("\t"+conf);
+	    }
+	    arr_node.clear();
+
+	    root.findNodes("location",arr_node);
+	    String[] arr_ext = {"php","sh","html","htm","js","jsp","asp","bat","ht"};
+	    System.out.println("\tScript, source files execute permission check");
+	    for(confNode cn : arr_node){
+		    boolean check_ext = false;
+		    for(String ext:arr_ext){
+			    if(cn.name.contains(ext)&&!cn.name.contains("=")){
+				    check_ext = true;
+				    break;
+			    }
+		    }
+		    if(check_ext){
+			    System.out.println("\t\t"+cn.name+"{");
+			    String rt = cn.findValue("return");
+			    String deny = cn.findValue("deny");
+			    if(rt!=null)
+				    System.out.println("\t\t\treturn "+rt);
+			    if(deny!=null)
+				    System.out.println("\t\t\tdeny "+deny);
+			    System.out.println("\t\t}");
+		    }
+	    }
+
+
+
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -161,10 +277,19 @@ public class nginxParser {
 			    System.out.println(tab+"}");
 
 	    }
-	    public void find(String key, String value){
-		    value+=map_attr.get(key);
-		    for(confNode c:arr_child)
-			    c.find(key,value);
+	    public String findValue(String key){
+		    return map_attr.get(key);
+	    }
+	    public void findNodes(String n, ArrayList<confNode> arr_node){
+		    if(arr_child.size()==0)
+			    return;
+
+		    for(confNode cn:arr_child){
+			    if(cn.name.startsWith(n)){
+				    arr_node.add(cn);
+			    }
+			    cn.findNodes(n,arr_node);
+		    }
 	    }
     }
 
