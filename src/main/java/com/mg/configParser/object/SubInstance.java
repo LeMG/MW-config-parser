@@ -1,6 +1,6 @@
-package com.mg.secuconfig.object;
+package com.mg.configParser.object;
 
-import com.mg.secuconfig.object.Middleware;
+import com.mg.configParser.object.Middleware;
 import java.io.File;
 public class SubInstance {
   private Middleware[] arr_m;

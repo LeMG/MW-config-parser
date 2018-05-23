@@ -1,4 +1,4 @@
-package com.mg.secuconfig.object;
+package com.mg.configParser.object;
 
 import java.io.File;
 

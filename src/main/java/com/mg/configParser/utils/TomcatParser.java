@@ -1,6 +1,6 @@
-package com.mg.secuconfig.utils;
+package com.mg.configParser.utils;
 
-import com.mg.secuconfig.object.*;
+import com.mg.configParser.object.*;
 import javax.xml.parsers.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.*;

@@ -1,6 +1,6 @@
-package com.mg.secuconfig.object;
+package com.mg.configParser.object;
 
-import com.mg.secuconfig.object.SubInstance;
+import com.mg.configParser.object.SubInstance;
 import java.io.*;
 import java.io.FileNotFoundException;
 

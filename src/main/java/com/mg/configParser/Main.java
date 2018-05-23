@@ -1,18 +1,18 @@
-package com.mg.secuconfig;
+package com.mg.configParser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import com.mg.secuconfig.object.*;
-import com.mg.secuconfig.utils.*;
+import com.mg.configParser.object.*;
+import com.mg.configParser.utils.*;
 
 
 public class Main {
     public static void main(String[] args) {
-
+	/*
         args = new String[2];
         args[0] = "-p";
         args[1] = "/sdcard/JavaNIDE/TestService";
-
+	*/
         int num_param = args.length;
         switch (num_param) {
             case 0:

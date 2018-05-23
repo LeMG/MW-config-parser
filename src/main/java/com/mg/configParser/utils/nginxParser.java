@@ -1,8 +1,8 @@
-package com.mg.secuconfig.utils;
+package com.mg.configParser.utils;
 
 import java.util.ArrayList;
 
-import com.mg.secuconfig.object.Middleware;
+import com.mg.configParser.object.Middleware;
 import java.io.*;
 import java.util.*;
 
