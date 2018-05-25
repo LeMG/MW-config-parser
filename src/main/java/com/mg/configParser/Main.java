@@ -10,13 +10,14 @@ import com.mg.configParser.object.*;
 import com.mg.configParser.utils.*;
 public class Main {
     public static void main(String[] args) {
-	/*
-        args = new String[2];
-        args[0] = "-p";
-        args[1] = "/sdcard/JavaNIDE/TestService";
-	*/
+	if(args.length==1&&args[0].compareTo("-t")==0){
+        	args = new String[2];
+        	args[0] = "-p";
+        	args[1] = "/sdcard/JavaNIDE/TestService";
+	}
 	Workbook wb = new XSSFWorkbook();
-        int num_param = args.length;
+        
+	int num_param = args.length;
         switch (num_param) {
             case 0:
                 System.out.println("Number of arguments doesn't matched!");

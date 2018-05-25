@@ -22,7 +22,10 @@ public class SubInstance {
       for(int i=0;i<num_mid;i++){
         arr_m[i] = new Middleware(list[i]);
       }
-    }        
+    }else if(num_mid==0){
+	    arr_m = new Middleware[1];
+	    arr_m[0] = new Middleware(sub_root);
+    }	    
   }
   
   public Middleware[] get_midList(){
