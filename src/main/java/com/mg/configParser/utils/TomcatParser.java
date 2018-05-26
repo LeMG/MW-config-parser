@@ -1,13 +1,18 @@
 package com.mg.configParser.utils;
 
-import com.mg.configParser.object.*;
-import javax.xml.parsers.*;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.*;
 import java.io.File;
 import java.util.ArrayList;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-public class TomcatParser {
+import com.mg.configParser.object.*;
+
+public class TomcatParser extends parser{
   File target;
   String name;
   DocumentBuilderFactory dbf = null;
@@ -29,8 +34,9 @@ public class TomcatParser {
   }
     
   public TomcatParser(Middleware m){
-    try{
-      for(File t:m.arr_config){
+	 this.setObject(new Result(m.getPath(),m.get_type())); 
+	  try{
+	    	  for(File t:m.arr_config){
         target = t;
         name = target.getName();
         if(name.endsWith("xml")){    
@@ -59,7 +65,12 @@ public class TomcatParser {
     if(name.endsWith(".xml")){
       Element root = doc.getDocumentElement();
       
-      if(name.compareTo("web.xml")==0&&target.getAbsolutePath().contains("WEB-INF")==false){
+      if(name.compareTo("web.xml")==0){//&&target.getAbsolutePath().contains("WEB-INF")==false){
+	      boolean is=false;
+	      
+	      if(target.getAbsolutePath().contains("WEB-INF")==true){
+	      	is=true;
+	      } 
         /*Driectory listing*/
         NodeList nl = root.getElementsByTagName("init-param");
         for(int i=0;i<nl.getLength();i++){
@@ -67,6 +78,7 @@ public class TomcatParser {
           String param_name = n.getFirstChild().getNextSibling().getTextContent();
           String param_value = n.getLastChild().getPreviousSibling().getTextContent();
           if(param_name.compareTo("listings")==0){
+		  r.insert("dir listing",param_name+" : "+param_value+"\n");
             System.out.println("\t"+param_name+" : "+param_value);
           }
         }
@@ -78,28 +90,12 @@ public class TomcatParser {
           //System.out.println(n.getTextContent());
           String code = n.getFirstChild().getNextSibling().getTextContent();
           String location = n.getLastChild().getPreviousSibling().getTextContent();
+	  r.insert("error page",code+" : "+location);
           System.out.println("\t"+code+" : "+location);
         }
         
-        /*HTTP Method*/
-        /*
-          <security-constraint>
-            <display-name>Example Security Constraint - part 1</display-name>
-            <web-resource-collection>
-              <web-resource-name>restricted methods</web-resource-name>
-              <url-pattern>/*</url-pattern>
-              <http-method>PUT</http-method>
-              <http-method>POST</http-method>
-              <http-method>DELETE</http-method>
-              <http-method>OPTIONS</http-method>
-              <http-method>TRACE</http-method>
-            </web-resource-collection>
-            <auth-constraint/>
-         </security-constraint>
-
-
-          */
-        nl = root.getElementsByTagName("security-constraint");
+	//restrict http method
+	nl = root.getElementsByTagName("security-constraint");
         for(int i=0;i<nl.getLength();i++){
           Node n = nl.item(i);
           NodeList child_nl = n.getChildNodes();
@@ -118,6 +114,7 @@ public class TomcatParser {
               }
               if(c.getNodeName().compareTo("web-resource-name")==0){
                 r_name = c.getTextContent();
+		r.insert("http method",r_name);
               }
               
               //URL pattern
@@ -126,6 +123,7 @@ public class TomcatParser {
                 c = c.getNextSibling();
               }
               url_pattern = c.getTextContent();
+	      r.insert("http method",url_pattern);
               
               //Restricted methods
               c = cur.getFirstChild();
@@ -142,6 +140,7 @@ public class TomcatParser {
              System.out.print("\tMethod list(restricted) : ");
              for(int i2=0;i2<al_method.size();i2++){
                System.out.print(al_method.get(i2)+" ");
+	       r.insert("http method","\t"+al_method.get(i2));
              }
              System.out.println();
           }
@@ -158,7 +157,8 @@ public class TomcatParser {
           NamedNodeMap nmap = n.getAttributes();
           appBase = nmap.getNamedItem("appBase").getNodeValue();
         }
-        System.out.println("\tDeploy directory(appBase) : "+appBase);     
+        System.out.println("\tDeploy directory(appBase) : "+appBase);
+	r.insert("deploy dir", appBase);	
         
         //Server Name
         nl = root.getElementsByTagName("Connector");
@@ -172,9 +172,11 @@ public class TomcatParser {
           }
         }
         System.out.println("\tServer name : "+server_name);
+	r.insert("server token",server_name);
         
         //Use symbolic link        
-        nl = root.getElementsByTagName("Context");
+        //nl = root.getElementsByTagName("Context");
+        nl = root.getElementsByTagName("Resource");
         String symlink = "default(not use)";
         for(int i=0;i<nl.getLength();i++){
           Node n = nl.item(i);
@@ -184,9 +186,11 @@ public class TomcatParser {
           }
         }
         System.out.println("\tUse Symbolic Link(Server.xml) : "+ symlink);
+	r.insert("symlink", symlink+"(server.xml)");
                 
       }else if(name.compareTo("context.xml")==0){
-        NodeList nl = root.getElementsByTagName("Context");
+        //NodeList nl = root.getElementsByTagName("Context");
+        NodeList nl = root.getElementsByTagName("Resource");
         
         //Use symbolic link
         Node temp = root.getAttributes().getNamedItem("allowLinking");
@@ -195,6 +199,7 @@ public class TomcatParser {
           symlink = temp.getNodeValue();
         }
         System.out.println("\tUse Symbolic Link(context.xml) : " + symlink);  
+	r.insert("symlink",symlink+"(context.xml)");
                                       
       }
     

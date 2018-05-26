@@ -18,6 +18,9 @@ public class Middleware {
   public String get_type(){
     return new String(type);
   }
+  public String getPath(){
+	  return mid_root.getAbsolutePath();
+  }
   
   /**
     MW type
@@ -26,7 +29,6 @@ public class Middleware {
     3. IIS
     4. Apache Tomcat
     5. Weblogic
-    6. JEUS
   **/
     
   private void set_MWType(){

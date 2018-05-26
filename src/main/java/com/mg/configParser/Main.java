@@ -1,6 +1,7 @@
 package com.mg.configParser;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -40,7 +41,7 @@ public class Main {
                 } else if (args[0].compareTo("-c") == 0) {
                     System.out.println("* Middleware config file list");
                     System.out.println("* Apache Tomcat config file list");
-                    System.out.println("* Middleware Dir/server.xml\n*\t\t web.xml\n*\t\t context.xml\n*\t\t WEB-INF/web.xml");
+                    System.out.println("* Middleware Dir/server.xml\n*\t\t context.xml\nweb.xml(WEB-INF/web.xml)");
                 } else {
                     System.out.println("Invalid argument!");
                     System.out.println("Check usage with -h or -help");
@@ -52,22 +53,28 @@ public class Main {
                     try {
                         Root r = new Root();
                         r.setPath(path);
+			ArrayList<Result> arr_result = new ArrayList<Result>();
+
                         SubInstance[] t_sub = r.get_subList();
                         for (SubInstance cur_sub: t_sub) {
                             System.out.println("Host name : " + cur_sub.getPath());
                             Middleware[] t_mid = cur_sub.get_midList();
                             for (Middleware m: t_mid) {
                                 System.out.println(m.getName() + "(" + m.get_type() + ")");
+				Result result = new Result(cur_sub.getPath(),m.getName(),m.get_type());
+				parser p=null;
                                 switch (m.get_type()) {
                                     case "Tomcat":
-                                        TomcatParser t_parser = new TomcatParser(m);
+                                        p = new TomcatParser(m);
                                         break;
                                     case "nginx":
-                                        nginxParser n_parser = new nginxParser(m);
+                                        p = new nginxParser(m);
                                         break;
                                     default:
                                         System.out.println("Unknown Middle ware");
                                 }
+				if(p!=null)
+					arr_result.add(p.r);
                             }
                         }
                     } catch (FileNotFoundException e) {
