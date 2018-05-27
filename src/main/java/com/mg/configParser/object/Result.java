@@ -3,11 +3,16 @@ package com.mg.configParser.object;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+
 public class Result {
 	static String os = System.getProperty("os.name");
 	String host_name;
 	String mw_name;
 	String mw_type;
+	String[] item = {"process owner","account management","logging","dir listing", "error page", "http method", "deploy dir", "symlink", "sever token","ext permission"  };
 
 	Map<String,StringBuffer> data;
 
@@ -40,6 +45,17 @@ public class Result {
 		}else{
 			cur.append("\n"+value);
 			this.data.put(key,cur);
+		}
+	}
+	public String getData(String key){
+		return data.get(key)==null?"null":data.get(key).toString();
+	}
+
+	public void write(Sheet s, int rowIndex, int colIndex){
+		for(int i=0;i<10;i++){
+			Row r = s.getRow(rowIndex+i);
+			Cell c = r.getCell(colIndex);
+			c.setCellValue(getData(item[i]));
 		}
 	}	
 

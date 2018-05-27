@@ -40,5 +40,8 @@ public class SubInstance {
       }
       return "fail";
   }
+  public int getNumMid(){
+	  return arr_m.length;
+  }
     
 }

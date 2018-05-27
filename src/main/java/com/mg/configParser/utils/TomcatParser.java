@@ -78,7 +78,7 @@ public class TomcatParser extends parser{
           String param_name = n.getFirstChild().getNextSibling().getTextContent();
           String param_value = n.getLastChild().getPreviousSibling().getTextContent();
           if(param_name.compareTo("listings")==0){
-		  r.insert("dir listing",param_name+" : "+param_value+"\n");
+		  r.insert("dir listing",param_name+" : "+param_value);
             System.out.println("\t"+param_name+" : "+param_value);
           }
         }
@@ -114,7 +114,7 @@ public class TomcatParser extends parser{
               }
               if(c.getNodeName().compareTo("web-resource-name")==0){
                 r_name = c.getTextContent();
-		r.insert("http method",r_name);
+		//r.insert("http method",r_name);
               }
               
               //URL pattern
@@ -123,7 +123,7 @@ public class TomcatParser extends parser{
                 c = c.getNextSibling();
               }
               url_pattern = c.getTextContent();
-	      r.insert("http method",url_pattern);
+	      //r.insert("http method",url_pattern);
               
               //Restricted methods
               c = cur.getFirstChild();
@@ -136,6 +136,7 @@ public class TomcatParser extends parser{
             }
           }
           if(al_method.size()>0){
+		  r.insert("http method", "url pattern : "+url_pattern);
              System.out.println("\tTraget URL : "+url_pattern);
              System.out.print("\tMethod list(restricted) : ");
              for(int i2=0;i2<al_method.size();i2++){
