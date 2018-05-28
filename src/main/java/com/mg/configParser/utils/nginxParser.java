@@ -3,19 +3,21 @@ package com.mg.configParser.utils;
 import java.util.ArrayList;
 
 import com.mg.configParser.object.Middleware;
+import com.mg.configParser.object.Result;
 import java.io.*;
 import java.util.*;
 
-public class nginxParser {
+public class nginxParser extends parser{
 
     public nginxParser(Middleware m){
-        for(File t:m.arr_config){
-            String config_name = t.getName();
-            if(config_name.compareTo("nginx.conf")==0){
-                parsenginx(t);
-            }
+	    this.setObject(new Result(m.getPath(),m.get_type()));
+	    for(File t:m.arr_config){
+           	 String config_name = t.getName();
+            	if(config_name.compareTo("nginx.conf")==0){
+               		 parsenginx(t);
+            	}
     
-        }
+        	}
     }
 
     public void parsenginx(File target){
@@ -57,6 +59,7 @@ public class nginxParser {
 	    confNode root = new confNode();
 	    stack.add(root);
 	    int top = 0;
+	    String prev_key = "";
             for(int i=0;i<arr_conf.size();i++){
                //System.out.println("\t"+arr_conf.get(i));
 	       String conf = arr_conf.get(i);//.replace("[","").replace("]","");
@@ -72,10 +75,13 @@ public class nginxParser {
 	       }else if(conf.charAt(conf.length()-1)=='}'){
 		       stack.remove(top);
 		       top--;
+	       }else if(conf.charAt(0)=='\''){
+		       cur.insert(prev_key, "\n"+conf);
 	       }else{
 		       //System.out.println("cur conf : "+conf);
 		       String[] arr_v = conf.split(" ");
 		       String key = arr_v[0];
+		       prev_key = key;
 		       String value = "";
 		       for(int i2=1;i2<arr_v.length;i2++){
 			       value+=arr_v[i2]+" ";
@@ -84,7 +90,7 @@ public class nginxParser {
 	       }
             }
 	    //test print
-	    //root.print("");
+	    root.print("");
         
             /*
             process owner -> user
@@ -97,8 +103,65 @@ public class nginxParser {
             file permission(upload dir, extension) -> location 	*php{return 403;}
 	    */
 	    System.out.println("\tProcess owner : "+root.findValue("user"));
-	    
+	    this.r.insert("process owner","user "+root.findValue("user"));
+
 	    ArrayList<confNode> arr_node = new ArrayList<confNode>();
+	    String el = root.findValue("error_log");
+	    if(el!=null){
+		    String[] arrEl = el.split("/split/");
+		    for(String ep:arrEl){
+			    r.insert("logging","error_log "+ep);
+		    }
+	    }
+	    root.findNodes("http", arr_node);
+	    r.insert("logging","http");
+	    for(confNode cn: arr_node){
+		    String lf = cn.findValue("log_format");
+		    if(lf!=null){
+			    r.insert("logging","\tlog_format "+lf);
+		    }
+	    }
+	    for(confNode cn:arr_node){
+		    String logPath = cn.findValue("access_log");
+		    if(logPath!=null){
+			    r.insert("logging","\taccess_log "+logPath);
+		    }
+		    String elogPath = cn.findValue("error_log");
+		    if(elogPath!=null){
+			    r.insert("logging","\terror_log "+elogPath);
+		    }
+	    }
+	    arr_node.clear();
+	    
+	    root.findNodes("server",arr_node);
+	    for(confNode cn : arr_node){
+		    String alogPath = cn.findValue("access_log");
+		    String elogPath = cn.findValue("error_log");
+		    if(alogPath!=null||elogPath!=null){
+			    r.insert("logging","server("+cn.findValue("server_name")+")");
+			    if(alogPath!=null){
+				    r.insert("logging","\taccess_log "+alogPath);
+			    }else{
+				    r.insert("logging","\terror_log "+elogPath);
+			    }
+		    }
+	    }
+	    arr_node.clear();
+	    root.findNodes("location", arr_node);
+	    for(confNode cn: arr_node){
+		    String alogPath = cn.findValue("access_log");
+		    String elogPath = cn.findValue("error_log");
+		    if(alogPath!=null||elogPath!=null){
+			    r.insert("logging",cn.name);
+			    if(alogPath!=null){
+				    r.insert("logging","\taccess_log "+alogPath);
+			    }else{
+				    r.insert("logging","\terror_log "+elogPath);
+			    }
+		    }
+
+	    }
+
 	    root.findNodes("location", arr_node);
 	    String autoindex = "";
 	    for(confNode cn : arr_node){
@@ -108,10 +171,12 @@ public class nginxParser {
 	    }
 	    if(autoindex.length()==0){
 		    System.out.println("\tDir listing : off");
+		    r.insert("dir listing","autoindex off(default)");
 	    }else{
 		    String[] arr_loc = autoindex.split("/split/");
 		    System.out.print("\tUsing dir listing : ");
 		    for(String loc:arr_loc){
+			    r.insert("dir listing",loc+"\n\tautoindex on");
 			    System.out.print(loc+", ");
 		    }
 		    System.out.println();
@@ -119,30 +184,48 @@ public class nginxParser {
 	    arr_node.clear();
 	    
 	    root.findNodes("server",arr_node);
-	    System.out.println("\tErro page config");
+	    System.out.println("\tError page config");
 	    for(confNode cn:arr_node){
 		    System.out.println("\t\t"+cn.name+"("+cn.findValue("server_name")+")");
+		    r.insert("error page","server("+cn.findValue("server_name")+")");
 		    String[] error_group = cn.findValue("error_page").split("/split/");
-		    for(String v:error_group)
+		    for(String v:error_group){
 			    System.out.println("\t\t\t"+v);
+			    r.insert("error page","\terror_page "+v);
+		    }
 	    }
 	    arr_node.clear();
 	    
 	    root.findNodes("location",arr_node);
 	    System.out.println("\tConfig for limitting http methods");
 	    for(confNode cn:arr_node){
+		    r.insert("http method",cn.name);
 		    ArrayList<confNode> arr_limit = new ArrayList<confNode>();
 		    cn.findNodes("limit_except",arr_limit);
 		    if(arr_limit.size()>0){
 			    System.out.println("\t\t"+cn.name+"{");
 			    for(confNode limit:arr_limit){
+				    r.insert("http method","\t"+limit.name);
 				    System.out.println("\t\t\t"+limit.name);
 				    String deny = limit.findValue("deny");
 				    String allow = limit.findValue("allow");
+				    r.insert("http method","\t\tdeny "+deny);
 				    System.out.println("\t\t\t\tdeny "+deny);
+				    r.insert("http method","\t\tallow "+allow);
 				    System.out.println("\t\t\t\tallow "+allow);
 			    }
 			    System.out.println("\t\t}");
+		    }
+	    }
+	    arr_node.clear();
+
+	    root.findNodes("location",arr_node);
+	    for(confNode cn:arr_node){
+		    String strRoot = cn.findValue("root");
+		    if(strRoot!=null){
+			    System.out.println("\t"+cn.name+"\n\t\troot "+strRoot);
+			    r.insert("deploy dir",cn.name);
+			    r.insert("deploy dir","\troot "+strRoot);
 		    }
 	    }
 	    arr_node.clear();
@@ -151,6 +234,7 @@ public class nginxParser {
 	    for(confNode cn:arr_node){
 		    String server_tokens = cn.findValue("server_tokens");
 		    if(server_tokens!=null){
+			    r.insert("server token",cn.name+"\n\tserver_tokens "+server_tokens);
 			    System.out.println("\tserver_tokens("+cn.name+") : "+server_tokens);
 		    }
 	    }
@@ -159,6 +243,7 @@ public class nginxParser {
 	    for(confNode cn:arr_node){
 		    String server_tokens = cn.findValue("server_tokens");
 		    if(server_tokens!=null){
+			    r.insert("server token",cn.name+"\n\tserver_tokens "+server_tokens);
 			    System.out.println("\tserver_tokens("+cn.name+") : "+server_tokens);
 		    }
 	    }
@@ -167,6 +252,7 @@ public class nginxParser {
 	    for(confNode cn : arr_node){
 		    String server_tokens = cn.findValue("server_tokens");
 		    if(server_tokens!=null){
+			    r.insert("server token",cn.name+"\n\tserver_tokens "+server_tokens);
 			    System.out.println("\tserver_tokens("+cn.name+") : "+server_tokens);
 		    }
 	    }
@@ -198,10 +284,13 @@ public class nginxParser {
 		    }
 	    }
 	    if(arr_symlink.size()==0){
+			    r.insert("symlink","disable_symlinks on");
 		    System.out.println("\tdisable_symlinks : on(defualt)");
 	    }else{
-		    for(String conf:arr_symlink)
+		    for(String conf:arr_symlink){
 			    System.out.println("\t"+conf);
+			    r.insert("symlink","disable_symlinks "+conf);
+		    }
 	    }
 	    arr_node.clear();
 
@@ -220,10 +309,15 @@ public class nginxParser {
 			    System.out.println("\t\t"+cn.name+"{");
 			    String rt = cn.findValue("return");
 			    String deny = cn.findValue("deny");
-			    if(rt!=null)
+			    r.insert("ext permission",cn.name);
+			    if(rt!=null){
 				    System.out.println("\t\t\treturn "+rt);
-			    if(deny!=null)
+				    r.insert("ext permission","\treturn "+rt);
+			    }
+			    if(deny!=null){
 				    System.out.println("\t\t\tdeny "+deny);
+				    r.insert("ext permission","\tdeny "+deny);
+			    }
 			    System.out.println("\t\t}");
 		    }
 	    }
