@@ -36,6 +36,9 @@ public class Middleware {
       type="Tomcat";
     else if(is_nginx())
       type = "nginx";
+    else if(is_httpd())
+	    type = "httpd";
+
   }
   
   private boolean is_nginx(){
@@ -46,6 +49,17 @@ public class Middleware {
       }
     }
     return false;
+  }
+  private boolean is_httpd(){
+	  for(File cur:arr_config){
+		  String name = cur.getName();
+		  if(name.endsWith("httpd.conf")){
+			  return true;
+		  }else if(name.startsWith("httpd")&&name.endsWith(".conf")){
+			  return true;
+		  }
+	  }
+	  return false;
   }
   
   private boolean is_Tomcat(){

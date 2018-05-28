@@ -2,8 +2,7 @@ package com.mg.configParser.utils;
 
 import java.util.ArrayList;
 
-import com.mg.configParser.object.Middleware;
-import com.mg.configParser.object.Result;
+import com.mg.configParser.object.*;
 import java.io.*;
 import java.util.*;
 
@@ -16,8 +15,7 @@ public class nginxParser extends parser{
             	if(config_name.compareTo("nginx.conf")==0){
                		 parsenginx(t);
             	}
-    
-        	}
+	    }
     }
 
     public void parsenginx(File target){
@@ -328,7 +326,7 @@ public class nginxParser extends parser{
             e.printStackTrace();
         }
     }
-    class confNode{
+    /*class confNode{
 	    Map<String, String> map_attr;
 	    ArrayList<confNode> arr_child;
 	    String name;
@@ -386,5 +384,5 @@ public class nginxParser extends parser{
 		    }
 	    }
     }
-
+   */
 }
