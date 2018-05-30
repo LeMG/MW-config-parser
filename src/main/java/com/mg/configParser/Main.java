@@ -78,6 +78,9 @@ public class Main {
                                     case "nginx":
                                         p = new nginxParser(m);
                                         break;
+				    case "httpd":
+					p = new httpdParser(m);
+					break;
                                     default:
                                         System.out.println("Unknown Middle ware");
                                 }
@@ -126,8 +129,10 @@ public class Main {
 				arr_result.get(i).write(s,stdIndex+2,i+1);
 			}
 
-			for(int i=0;i<numMW+1;i++){
-				s.autoSizeColumn(i);
+			s.autoSizeColumn(0);
+			for(int i=1;i<numMW+1;i++){
+				//s.autoSizeColumn(i);
+				s.setColumnWidth(i,30*256);
 			}
 
 

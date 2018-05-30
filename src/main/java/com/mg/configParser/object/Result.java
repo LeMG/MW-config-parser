@@ -12,7 +12,7 @@ public class Result {
 	String host_name;
 	String mw_name;
 	String mw_type;
-	String[] item = {"process owner","account management","logging","dir listing", "error page", "http method", "deploy dir", "symlink", "sever token","ext permission"  };
+	String[] item = {"process owner","account management","logging","dir listing", "error page", "http method", "deploy dir", "symlink", "server token","ext permission"  };
 
 	Map<String,StringBuffer> data;
 

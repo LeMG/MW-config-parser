@@ -1,9 +1,16 @@
 package com.mg.configParser.utils;
 
 import java.io.File;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -61,7 +68,10 @@ public class TomcatParser extends parser{
     System.out.println(nl.getLength());
   }
   
-  public void parse_Tomcat(/*Result r*/){
+  public void parse_Tomcat(/*Result r*/) throws TransformerException{
+	  Transformer trans = TransformerFactory.newInstance().newTransformer();
+	  trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION,"yes");
+	  trans.setOutputProperty(OutputKeys.INDENT,"yes");
     if(name.endsWith(".xml")){
       Element root = doc.getDocumentElement();
       
@@ -157,9 +167,13 @@ public class TomcatParser extends parser{
           Node n = nl.item(i);
           NamedNodeMap nmap = n.getAttributes();
           appBase = nmap.getNamedItem("appBase").getNodeValue();
+	  StringWriter sw = new StringWriter();
+	  trans.transform(new DOMSource(n),new StreamResult(sw));
+	  r.insert("deploy dir",sw.toString());
+
         }
         System.out.println("\tDeploy directory(appBase) : "+appBase);
-	r.insert("deploy dir", appBase);	
+	//r.insert("deploy dir", appBase);	
         
         //Server Name
         nl = root.getElementsByTagName("Connector");
@@ -170,10 +184,12 @@ public class TomcatParser extends parser{
           if(temp!=null){
             server_name = temp.getNodeValue();
             //System.out.println("Server : "+server_name);
+	    StringWriter sw = new StringWriter();
+	    trans.transform(new DOMSource(n),new StreamResult(sw));
+	    r.insert("server token",sw.toString());
+	    System.out.println("server token " +sw.toString());
           }
         }
-        System.out.println("\tServer name : "+server_name);
-	r.insert("server token",server_name);
         
         //Use symbolic link        
         //nl = root.getElementsByTagName("Context");
