@@ -74,7 +74,7 @@ public class httpdParser extends parser{
 			       }else if(conf.startsWith("</")){
 				       stack.remove(top);
 				       top--;
-			       }else if(conf.charAt(0)=='\''){
+			       }else if(conf.charAt(0)=='\''||conf.charAt(0)=='\"'){
 				       cur.insert(prev_key, "\n"+conf);
 			       }else{
 				       //System.out.println("cur conf : "+conf);
@@ -87,6 +87,142 @@ public class httpdParser extends parser{
 				       }
 				       cur.insert(key,value);
 			       }
+			}
+
+			//{"process owner","account management","logging","dir listing", "error page",
+			//"http method", "deploy dir", "symlink", "sever token","ext permission"  };
+			
+			String po = root.findValue("User");
+			String group = root.findValue("Group");
+			r.insert("process owner","User "+po);
+			r.insert("process owner","Group "+group);
+
+			String el = root.findValue("ErrorLog");
+			if(el!=null){
+				String[] arr_el = el.split("/split/");
+				for(String el_path : arr_el){
+					r.insert("logging","ErrorLog "+el_path);
+				}
+			}
+			ArrayList<confNode> arrConf = new ArrayList<confNode>();
+			root.findNodes("<IfModule", arrConf);
+			for(confNode cn : arrConf){
+				String custom = cn.findValue("CustomLog");
+				if(custom!=null){
+					String[] arr_custom = cn.findValue("CustomLog").split("/split/");
+					for(String log:arr_custom){
+						r.insert("logging","CustomLog "+log);
+					}
+				}
+			}
+			arrConf.clear();
+
+			root.findNodes("<Directory",arrConf);
+			for(confNode cn : arrConf){
+				String op = cn.findValue("Options");
+				if(op.contains("Indexes")){
+					r.insert("dir listing",cn.name);
+					r.insert("dir listing","\tOptions "+op);
+					r.insert("dir listing","</Directory>");
+				}
+			}
+			arrConf.clear();
+
+			String ep = root.findValue("ErrorDocument");
+			if(ep!=null){
+				String[] arr_ep = ep.split("/split/");
+				for(String e : arr_ep){
+					r.insert("error page","ErrorDocument "+e);
+				}
+			}
+			root.findNodes("<Directory",arrConf);
+			for(confNode cn : arrConf){
+				ep = null;
+				ep=cn.findValue("ErrorDocument");
+				if(ep!=null){
+					String[] arr_ep = ep.split("/split/");
+					if(arr_ep.length>0)
+						r.insert("error page",cn.name);
+					for(String e : arr_ep){
+						r.insert("error page","\tErrorDocument "+e);
+					}
+					if(arr_ep.length>0)
+						r.insert("error page","</Directory>");
+				}
+			}
+			arrConf.clear();
+		
+			root.findNodes("<Limit",arrConf);
+			for(confNode cn : arrConf){
+				r.insert("http method",cn.name);
+				r.insert("http method","\tOrder "+cn.findValue("Order"));
+				String a = cn.findValue("Allow");
+				if(a!=null)
+					r.insert("http method","\t Deny " + a);
+				String d = cn.findValue("Deny");
+				if(d!=null)
+					r.insert("http method", "\tDeny " +d);
+			}	
+			arrConf.clear();
+
+			String docRoot = root.findValue("DocumentRoot");
+			String serverRoot = root.findValue("ServerRoot");
+			r.insert("deploy dir","ServerRoot "+serverRoot);
+			if(docRoot!=null)
+				r.insert("deploy dir","DocumentRoot "+docRoot);
+			root.findNodes("VirtualHost",arrConf);
+			for(confNode cn : arrConf){
+				docRoot = null;
+				docRoot = cn.findValue("DocumentRoot");
+				if(docRoot!=null){
+					r.insert("deploy dir",cn.name);
+					r.insert("deploy dir","\tDocumentRoot "+docRoot);
+					r.insert("deploy dir","</VirtualHost>");
+				}
+			}
+			arrConf.clear();
+			
+			root.findNodes("<Directory",arrConf);
+			for(confNode cn : arrConf){
+				String op = cn.findValue("Options");
+				if(op.contains("FollowSymLinks")){
+					r.insert("symlink",cn.name);
+					r.insert("symlink","\tOptions "+op);
+					r.insert("symlink","</Directory>");
+				}
+			}
+			arrConf.clear();
+
+			String serverTokens = root.findValue("ServerTokens");
+			if(serverTokens!=null)
+				r.insert("server token","ServerTokens "+serverTokens);
+			
+			root.findNodes("<Directory",arrConf);
+			for(confNode cn : arrConf){
+				String op = cn.findValue("Options");
+				String op2 = cn.findValue("RemoveType");
+				ArrayList<confNode> arrFiles = new ArrayList<confNode>();
+				cn.findNodes("<Files",arrFiles);
+				if((op!=null&&op.contains("IncludesNoExec"))||op2!=null||arrFiles.size()>0){
+					r.insert("ext permission",cn.name);
+					if(op.contains("IncludesNoExec")){
+						r.insert("ext permission","\tOptions "+op);
+					}
+					if(op2!=null){
+						r.insert("ext permission","\tRemoveType "+op2);
+					}
+					for(confNode c: arrFiles){
+						r.insert("ext permission","\t"+c.name);
+						String o = c.findValue("Order");
+						r.insert("ext permission","\t\tOrder "+o);
+						o = c.findValue("Deny");
+						r.insert("ext permission","\t\tDeny "+o);
+						o = c.findValue("Allow");
+						r.insert("ext permission","\t\tAllow "+o);
+						r.insert("ext permission","\t</Files>");
+					}
+					r.insert("ext permission","</Directory>");
+				}
 			}
 
 
