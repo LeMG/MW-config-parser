@@ -50,10 +50,7 @@ public class TomcatParser extends parser{
           dbf = DocumentBuilderFactory.newInstance();
           db = dbf.newDocumentBuilder();
           doc = db.parse(target);
-          switch(m.get_type()){
-            case "Tomcat":
-              parse_Tomcat();
-          }
+          parse_Tomcat();
         }
       }
     }catch(Exception e){
@@ -75,7 +72,7 @@ public class TomcatParser extends parser{
     if(name.endsWith(".xml")){
       Element root = doc.getDocumentElement();
       
-      if(name.compareTo("web.xml")==0){//&&target.getAbsolutePath().contains("WEB-INF")==false){
+      if(name.contains("web.xml")){//&&target.getAbsolutePath().contains("WEB-INF")==false){
 	      boolean is=false;
 	      
 	      if(target.getAbsolutePath().contains("WEB-INF")==true){

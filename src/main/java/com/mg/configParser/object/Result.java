@@ -28,7 +28,7 @@ public class Result {
 		String os = System.getProperty("os.name");
 		String delimiter = "/";
 		if(os.contains("windows")||os.contains("Windows")||os.contains("WINDOWS")){
-			delimiter = "\\";
+			delimiter = "\\\\";
 		}
 		String[] a = path.split(delimiter);
 		this.mw_type = mwt;

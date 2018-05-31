@@ -18,9 +18,9 @@ LeMG@localhost:/$ mvn clean compile
 ### Place configuration files in following directory structure.
 ```
 service_name/
-             server isntance/
-                                 m/w instance/
-                                                  config files
+	┗ server isntance/
+		┗ m/w instance/
+			┗ config files
 ```
 Currently support Apache httpd, Apache Tomcat, nginx.
 ### Execute jar file with following parameters
