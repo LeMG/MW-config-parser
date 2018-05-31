@@ -15,7 +15,7 @@ Compile this project with maven
 LeMG@localhost:/$ mvn clean compile
 ```
 ## Usage
-###Place configuration files in following directory structure.
+### Place configuration files in following directory structure.
 ```
 service_name/
              server isntance/
