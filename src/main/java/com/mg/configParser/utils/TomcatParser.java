@@ -79,7 +79,9 @@ public class TomcatParser extends parser {
 			for(int i=0;i<len;i++){
 				if(rcl.item(i).getNodeName().compareTo("#comment")==0){
 					garbage.add(rcl.item(i));
-				}else
+				}else if(rcl.item(i).getTextContent().trim().length()==0)
+					garbage.add(rcl.item(i));
+				else
 					removeComment(rcl.item(i));
 			}
 			for(Node n:garbage)
