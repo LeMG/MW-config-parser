@@ -26,7 +26,9 @@ public class parser {
 			Node n = nl.item(i);
 			if(n.getNodeName().compareTo("#comment")==0){
 				garbage.add(n);
-			}else{
+			}else if(n.getNodeName().compareTo("#text")==0&&n.getTextContent().trim().length()==0)
+				garbage.add(n);
+			else{
 				NodeList cnl = n.getChildNodes();
 				int len2 = cnl.getLength();
 				for(int i2=0;i2<len2;i2++){
