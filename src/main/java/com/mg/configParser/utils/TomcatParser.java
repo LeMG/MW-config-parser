@@ -72,7 +72,19 @@ public class TomcatParser extends parser {
 		trans.setOutputProperty(OutputKeys.INDENT, "yes");
 		if (name.endsWith(".xml")) {
 			Element root = doc.getDocumentElement();
-
+			
+			ArrayList<Node> garbage = new ArrayList<Node>();
+			NodeList rcl = root.getChildNodes();
+			int len = rcl.getLength();
+			for(int i=0;i<len;i++){
+				if(rcl.item(i).getNodeName().compareTo("#comment")==0){
+					garbage.add(rcl.item(i));
+				}else
+					removeComment(rcl.item(i));
+			}
+			for(Node n:garbage)
+				root.removeChild(n);
+			
 			if (name.contains("web.xml")) {// &&target.getAbsolutePath().contains("WEB-INF")==false){
 				boolean is = false;
 
@@ -166,11 +178,11 @@ public class TomcatParser extends parser {
 			} else if (name.compareTo("server.xml") == 0) {
 				// Deploy directory
 				NodeList nl = root.getElementsByTagName("Host");
-				String appBase = "";
+				String appBase = "webapps";
 				for (int i = 0; i < nl.getLength(); i++) {
 					Node n = nl.item(i);
 					NamedNodeMap nmap = n.getAttributes();
-					appBase = nmap.getNamedItem("appBase").getNodeValue();
+					appBase = nmap.getNamedItem("appBase").getNodeValue()==null?appBase:"webapps";
 					StringWriter sw = new StringWriter();
 					trans.transform(new DOMSource(n), new StreamResult(sw));
 					r.insert("deploy dir", sw.toString());

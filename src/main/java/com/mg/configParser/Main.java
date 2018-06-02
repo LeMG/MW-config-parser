@@ -128,9 +128,10 @@ public class Main {
 						Row row = s.getRow(stdIndex);
 						Cell c = row.getCell(curIndex);
 						c.setCellValue(t_sub[i].getPath());
-						s.addMergedRegion(new CellRangeAddress(stdIndex,
-								stdIndex, curIndex, curIndex
-										+ t_sub[i].getNumMid() - 1));
+						if (t_sub[i].getNumMid() > 1)
+							s.addMergedRegion(new CellRangeAddress(stdIndex,
+									stdIndex, curIndex, curIndex
+											+ t_sub[i].getNumMid() - 1));
 						for (int i2 = 0; i2 < t_sub[i].get_midList().length; i2++) {
 							Middleware m = t_sub[i].get_midList()[i2];
 							row = s.getRow(stdIndex + 1);
