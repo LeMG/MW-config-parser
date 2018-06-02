@@ -12,18 +12,19 @@ This project is built with following environment
 ## Installation
 Compile this project with maven
 ```
-LeMG@localhost:/$ mvn clean compile
+mvn clean compile
 ```
 ## Usage
 ### Place configuration files in following directory structure.
 ```
 service_name/
-	┗ server isntance/
+	┗ server_isntance/
 		┗ m/w instance/
 			┗ config files
 ```
-Currently support Apache httpd, Apache Tomcat, nginx.
+※Currently it supports Apache httpd, Apache Tomcat, nginx.
+※If there are unused files, result can be different.
 ### Execute jar file with following parameters
 ```
-LeMG@localhost:/$java -jar mwConfigparser.jar -p /{PATH_TO_SERVICE_DIR}/service_name
+java -jar mwConfigparser.jar -p /{PATH_TO_SERVICE_DIR}/service_name
 ```

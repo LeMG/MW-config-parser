@@ -27,27 +27,32 @@ public class Main {
 	int num_param = args.length;
         switch (num_param) {
             case 0:
-                System.out.println("Number of arguments doesn't matched!");
                 System.out.println("Check usage with -h or -help");
                 return;
             case 1:
                 if (args[0].compareTo("-h") == 0 || args[0].compareTo("-help") == 0) {
-                    System.out.println("* M/W Config Parser");
-                    System.out.println("* How to use ");
-                    System.out.println("* Before use please put the config files in the following structure");
-                    System.out.println("* Service root(DIR)");
-                    System.out.println("* \t Host(Server) list(Dir)");
-                    System.out.println("*\t\t Middleware list(Dir)");
-                    System.out.println("* \t\t\t config files");
-                    System.out.println("* ");
-                    System.out.println("* -h, -help : print usage");
-                    System.out.println("* -p PATH : Check middleware config values related with security");
-                    System.out.println("*           PATH param must be absolute path)");
-                    System.out.println("* -c : Middleware config file list");
+                    System.out.println("- How to use ");
+                    System.out.println("  * Before use please put the config files in the following structure");
+                    System.out.println("    Service root(DIR)");
+                    System.out.println("    \tHost(Server) list(Dir)");
+                    System.out.println("    \t\tMiddleware list(Dir)");
+                    System.out.println("    \t\t\tconfig files");
+                    System.out.println("  * -h, -help : print usage");
+                    System.out.println("  * -p PATH : Check middleware config values related with security");
+                    System.out.println("  *           PATH param must be absolute path)");
+                    System.out.println("  * -c : Middleware config file list");
                 } else if (args[0].compareTo("-c") == 0) {
-                    System.out.println("* Middleware config file list");
-                    System.out.println("* Apache Tomcat config file list");
-                    System.out.println("* Middleware Dir/server.xml\n*\t\t context.xml\nweb.xml(WEB-INF/web.xml)");
+                    System.out.println("- Middleware config file list");
+                    System.out.println("  * Apache Tomcat config file list");
+                    System.out.println("    (server.xml / context.xml / web.xml)");
+		    System.out.println("  * Apache httpd");
+		    System.out.println("    httpd.conf and other *.conf files which are included in httpd.conf)");
+		    System.out.println("  * nginx");
+		    System.out.println("    (nginx.conf)");
+		    System.out.println("  * Microsoft IIS");
+		    System.out.println("    (applicationhost.xml)");
+		    System.out.println("  * Oracle Weblogic");
+		    System.out.println("    (config.xml)");
                 } else {
                     System.out.println("Invalid argument!");
                     System.out.println("Check usage with -h or -help");
