@@ -102,8 +102,12 @@ public class TomcatParser extends parser {
 					String param_value = n.getLastChild().getPreviousSibling()
 							.getTextContent();
 					if (param_name.compareTo("listings") == 0) {
-						r.insert("dir listing", param_name + " : "
-								+ param_value);
+						StringWriter sw = new StringWriter();
+						trans.transform(new DOMSource(n), new StreamResult(sw));
+
+						//r.insert("dir listing", param_name + " : "
+						//		+ param_value);
+						r.insert("dir listing", sw.toString());
 						System.out.println("\t" + param_name + " : "
 								+ param_value);
 					}
