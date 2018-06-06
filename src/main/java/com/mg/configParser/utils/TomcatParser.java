@@ -117,12 +117,15 @@ public class TomcatParser extends parser {
 				nl = root.getElementsByTagName("error-page");
 				for (int i = 0; i < nl.getLength(); i++) {
 					Node n = nl.item(i);
+					StringWriter sw = new StringWriter();
+					trans.transform(new DOMSource(n), new StreamResult(sw));
+					r.insert("error page", sw.toString());
 					// System.out.println(n.getTextContent());
 					String code = n.getFirstChild().getNextSibling()
 							.getTextContent();
 					String location = n.getLastChild().getPreviousSibling()
 							.getTextContent();
-					r.insert("error page", code + " : " + location);
+					//r.insert("error page", code + " : " + location);
 					System.out.println("\t" + code + " : " + location);
 				}
 
@@ -134,7 +137,12 @@ public class TomcatParser extends parser {
 					String r_name = null;
 					String url_pattern = null;
 					ArrayList<String> al_method = new ArrayList<String>();
-
+					if(((Element)n).getElementsByTagName("http-method").getLength()>0||((Element)n).getElementsByTagName("http-method-omission").getLength()>0){
+						StringWriter sw = new StringWriter();
+						trans.transform(new DOMSource(n), new StreamResult(sw));
+						r.insert("http method", sw.toString());
+					}
+					/*
 					for (int i2 = 0; i2 < child_nl.getLength(); i2++) {
 						Node cur = child_nl.item(i2);
 						String cur_name = cur.getNodeName();
@@ -167,8 +175,8 @@ public class TomcatParser extends parser {
 								c = c.getNextSibling();
 							} while (c != null);
 						}
-					}
-					if (al_method.size() > 0) {
+					}*/
+					/*if (al_method.size() > 0) {
 						r.insert("http method", "url pattern : " + url_pattern);
 						System.out.println("\tTraget URL : " + url_pattern);
 						System.out.print("\tMethod list(restricted) : ");
@@ -177,7 +185,7 @@ public class TomcatParser extends parser {
 							r.insert("http method", "\t" + al_method.get(i2));
 						}
 						System.out.println();
-					}
+					}*/
 
 				}
 
@@ -222,25 +230,36 @@ public class TomcatParser extends parser {
 					Node temp = n.getAttributes().getNamedItem("allowLinking");
 					if (temp != null) {
 						symlink = temp.getNodeValue();
+						StringWriter sw = new StringWriter();
+						trans.transform(new DOMSource(n), new StreamResult(sw));
+						r.insert("symlink", sw.toString());
 					}
 				}
 				System.out.println("\tUse Symbolic Link(Server.xml) : "
 						+ symlink);
-				r.insert("symlink", symlink + "(server.xml)");
+				//r.insert("symlink", symlink + "(server.xml)");
 
 			} else if (name.compareTo("context.xml") == 0) {
 				// NodeList nl = root.getElementsByTagName("Context");
 				NodeList nl = root.getElementsByTagName("Resource");
-
+				for (int i = 0; i < nl.getLength(); i++) {
+					Node n = nl.item(i);
+					Node temp = n.getAttributes().getNamedItem("allowLinking");
+					if (temp != null) {
+						StringWriter sw = new StringWriter();
+						trans.transform(new DOMSource(n), new StreamResult(sw));
+						r.insert("symlink", sw.toString());
+					}
+				}
 				// Use symbolic link
-				Node temp = root.getAttributes().getNamedItem("allowLinking");
+				/*Node temp = root.getAttributes().getNamedItem("allowLinking");
 				String symlink = "default(not use)";
 				if (temp != null) {
 					symlink = temp.getNodeValue();
 				}
 				System.out.println("\tUse Symbolic Link(context.xml) : "
 						+ symlink);
-				r.insert("symlink", symlink + "(context.xml)");
+				r.insert("symlink", symlink + "(context.xml)");*/
 
 			}
 
