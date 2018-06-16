@@ -79,7 +79,7 @@ public class wildflyParser extends parser{
 				r.insert("deploy dir",sw.toString());
 			}
 
-		}else if(target.getName().compareTo("domain.xml")==0){
+		}else if(name.contains("domain")&&name.endsWith(".xml")){
 			
 		}else if(name.contains("web")&&name.endsWith(".xml")){
 			//error page
@@ -89,6 +89,17 @@ public class wildflyParser extends parser{
 				StringWriter sw = new StringWriter();
 				trans.transform(new DOMSource(n), new StreamResult(sw));
 				r.insert("error page",sw.toString());
+			}
+
+			///http method
+			nl = root.getElementsByTagName("security-constraint");
+			for(int i=0;i<nl.getLength();i++){
+				Node n = nl.item(i);
+				if(((Element)n).getElementsByTagName("http-method").getLength()>0){
+					StringWriter sw = new StringWriter();
+					trans.transform(new DOMSource(n), new StreamResult(sw));
+					r.insert("http method", sw.toString());
+				}
 			}
 		}
 	}

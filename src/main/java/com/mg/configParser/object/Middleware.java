@@ -36,7 +36,17 @@ public class Middleware {
 			type = "nginx";
 		else if (is_httpd())
 			type = "httpd";
+		else if (is_IIS())
+			type="IIS";
 
+	}
+	private boolean is_IIS(){
+		for(File cur : arr_config){
+			if(cur.getName().compareToIgnoreCase("applicationhost.xml")==0){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean is_nginx() {

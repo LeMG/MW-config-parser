@@ -67,9 +67,9 @@ public class TomcatParser extends parser {
 	}
 
 	public void parse_Tomcat(/* Result r */) throws TransformerException {
-		Transformer trans = TransformerFactory.newInstance().newTransformer();
-		trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-		trans.setOutputProperty(OutputKeys.INDENT, "yes");
+		//Transformer trans = TransformerFactory.newInstance().newTransformer();
+		//trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		//trans.setOutputProperty(OutputKeys.INDENT, "yes");
 		if (name.endsWith(".xml")) {
 			Element root = doc.getDocumentElement();
 			
