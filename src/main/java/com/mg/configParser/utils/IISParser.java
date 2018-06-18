@@ -71,17 +71,74 @@ public class IISParser extends parser{
 		}
 
 		if(name.compareToIgnoreCase("applicationHost.xml")==0){
+			//deploy dir
+			NodeList nl = root.getElementsByTagName("application");
+			for(int i=0;i<nl.getLength();i++){
+				writeXMLResult(nl.item(i),"deploy dir");
+			}
+
 			//logging
-			NodeList nl = root.getElementsByTagName("logFile");
+			nl = root.getElementsByTagName("logFile");
 			for(int i=0;i<nl.getLength();i++){
 				writeXMLResult(nl.item(i),"logging");
 			}
 			
 			//error page
 			nl = root.getElementsByTagName("httpErrors");
+			r.insert("error page","ApplicatioHost.config");
 			for(int i=0;i<nl.getLength();i++){
 				writeXMLResult(nl.item(i),"error page");
 			}
+
+
+		}else if(name.compareTo("Web.config")==0){
+			//http method
+			NodeList nl = root.getElementsByTagName("verbs");
+			for(int i=0;i<nl.getLength();i++){
+				writeXMLResult(nl.item(i),"http method");
+			}
+
+			//dir listing
+			nl = root.getElementsByTagName("directoryBrowse");
+			for(int i=0;i<nl.getLength();i++){
+				writeXMLResult(nl.item(i),"dir listing");
+			}
+
+			//error page
+			nl = root.getElementsByTagName("httpErrors");
+			r.insert("error page","Web.config");
+			for(int i=0;i<nl.getLength();i++){
+				writeXMLResult(nl.item(i),"error page");
+			}
+
+
+			//sym link
+			nl = root.getElementsByTagName("fileExtensions");
+			for(int i=0;i<nl.getLength();i++){
+				String ext = nl.item(i).getAttributes().getNamedItem("fileExtension").getNodeValue();
+				if(ext.compareToIgnoreCase(".lnk")==0){
+					writeXMLResult(nl.item(i),"symlink");
+				}
+			}
+
+			//server token(url rewrite)
+			nl = root.getElementsByTagName("rule");
+			for(int i=0;i<nl.getLength();i++){
+				Element temp = (Element)nl.item(i);
+				NodeList tl = temp.getElementsByTagName("match");
+				for(int i2=0;i2<tl.getLength();i2++){
+					if(tl.item(i2).getAttributes().getNamedItem("serverVariable").getNodeValue().compareTo("RESPONSE_SERVER")==0){
+						writeXMLResult(nl.item(i),"server token");
+					}
+				}
+			}
+
+			//ext permission
+			nl = root.getElementsByTagName("handlers");
+			for(int i=0;i<nl.getLength();i++){
+				writeXMLResult(nl.item(i),"ext permission");
+			}
+
 		}
 	}
 
