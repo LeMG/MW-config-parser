@@ -17,7 +17,7 @@ import org.apache.poi.ss.usermodel.*;
 
 public class Main {
 	static int stdIndex = 4;
-
+	static MainWindow mw;
 	public static void main(String[] args) {
 		if (args.length == 1 && args[0].compareTo("-t") == 0) {
 			args = new String[2];
@@ -28,6 +28,8 @@ public class Main {
 		int num_param = args.length;
 		switch (num_param) {
 		case 0:
+			mw = new MainWindow();
+			mw.setProgress("test");
 			System.out.println("Check usage with -h or -help");
 			return;
 		case 1:
@@ -58,7 +60,9 @@ public class Main {
 				System.out.println("    (applicationhost.xml)");
 				System.out.println("  * Oracle Weblogic");
 				System.out.println("    (config.xml)");
-			} else {
+			} else if(args[0].compareTo("-w")==0){
+				
+			}else {
 				System.out.println("Invalid argument!");
 				System.out.println("Check usage with -h or -help");
 			}
@@ -66,104 +70,7 @@ public class Main {
 		case 2:
 			if (args[0].compareTo("-p") == 0) {
 				String path = args[1];
-				try {
-					Root r = new Root();
-					r.setPath(path);
-					ArrayList<Result> arr_result = new ArrayList<Result>();
-
-					SubInstance[] t_sub = r.get_subList();
-					int numMW = 0;
-					for (SubInstance cur_sub : t_sub) {
-						System.out.println("Host name : " + cur_sub.getPath());
-						Middleware[] t_mid = cur_sub.get_midList();
-						numMW += t_mid.length;
-						for (Middleware m : t_mid) {
-							System.out.println(m.getName() + "(" + m.get_type()
-									+ ")");
-							Result result = new Result(cur_sub.getPath(),
-									m.getName(), m.get_type());
-							parser p = null;
-							switch (m.get_type()) {
-							case "Tomcat":
-								p = new TomcatParser(m);
-								break;
-							case "nginx":
-								p = new nginxParser(m);
-								break;
-							case "httpd":
-								p = new httpdParser(m);
-								break;
-							default:
-								System.out.println("Unknown Middle ware");
-							}
-							if (p != null)
-								arr_result.add(p.r);
-						}
-					}
-					Workbook wb = new XSSFWorkbook();
-					CellStyle style = wb.createCellStyle();
-					style.setBorderTop(BorderStyle.THIN);
-					style.setBorderBottom(BorderStyle.THIN);
-					style.setBorderLeft(BorderStyle.THIN);
-					style.setBorderRight(BorderStyle.THIN);
-					style.setTopBorderColor(IndexedColors.BLACK.getIndex());
-					style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-					style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
-					style.setRightBorderColor(IndexedColors.BLACK.getIndex());
-					style.setVerticalAlignment(VerticalAlignment.CENTER);
-					String sheet = "Result";
-					Sheet s = wb.createSheet(sheet);
-					createForm(s, numMW);
-
-					for (int i = 0; i < 12; i++) {
-						Row row = s.getRow(stdIndex + i);
-						for (int i2 = 0; i2 < numMW + 1; i2++) {
-							Cell c = row.getCell(i2);
-							c.setCellStyle(style);
-						}
-					}
-
-					int curIndex = 1;
-					for (int i = 0; i < t_sub.length; i++) {
-						Row row = s.getRow(stdIndex);
-						Cell c = row.getCell(curIndex);
-						c.setCellValue(t_sub[i].getPath());
-						if (t_sub[i].getNumMid() > 1)
-							s.addMergedRegion(new CellRangeAddress(stdIndex,
-									stdIndex, curIndex, curIndex
-											+ t_sub[i].getNumMid() - 1));
-						for (int i2 = 0; i2 < t_sub[i].get_midList().length; i2++) {
-							Middleware m = t_sub[i].get_midList()[i2];
-							row = s.getRow(stdIndex + 1);
-							c = row.getCell(curIndex + i2);
-							c.setCellValue(m.getName() + "(" + m.get_type()
-									+ ")");
-						}
-						curIndex = curIndex + t_sub[i].getNumMid();
-					}
-					for (int i = 0; i < arr_result.size(); i++) {
-						arr_result.get(i).write(s, stdIndex + 2, i + 1);
-					}
-
-					s.autoSizeColumn(0);
-					for (int i = 1; i < numMW + 1; i++) {
-						// s.autoSizeColumn(i);
-						s.setColumnWidth(i, 30 * 256);
-					}
-
-					try {
-						String fileName = "mwConfigParser_result_"
-								+ (new SimpleDateFormat("yyyyMMdd"))
-										.format(new Date()) + ".xlsx";
-						OutputStream ops = new FileOutputStream(fileName);
-						wb.write(ops);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
-				} catch (FileNotFoundException e) {
-					System.out.println("Target file/directory not found!");
-				}
+				parse(path);
 			} else {
 				System.out.println("Invalid argument!");
 				System.out.println("Check usage with -h or -help");
@@ -183,6 +90,49 @@ public class Main {
 		 * m:t_mid){ System.out.println(i++); XMLParser t_parser = new
 		 * XMLParser(m); }
 		 */
+	}
+	
+	public static void parse(String path){
+		mw.clearProgress();
+		try {
+			Root r = new Root();
+			r.setPath(path);
+			ArrayList<Result> arr_result = new ArrayList<Result>();
+
+			SubInstance[] t_sub = r.get_subList();
+			int numMW = 0;
+			for (SubInstance cur_sub : t_sub) {
+				System.out.println("Host name : " + cur_sub.getPath());
+				Middleware[] t_mid = cur_sub.get_midList();
+				numMW += t_mid.length;
+				for (Middleware m : t_mid) {
+					System.out.println(m.getName() + "(" + m.get_type()
+							+ ")");
+					Result result = new Result(cur_sub.getPath(),
+							m.getName(), m.get_type());
+					parser p = null;
+					switch (m.get_type()) {
+					case "Tomcat":
+						p = new TomcatParser(m);
+						break;
+					case "nginx":
+						p = new nginxParser(m);
+						break;
+					case "httpd":
+						p = new httpdParser(m);
+						break;
+					default:
+						System.out.println("Unknown Middle ware");
+					}
+					if (p != null)
+						arr_result.add(p.r);
+				}
+			}
+			writeResult(arr_result, t_sub, numMW);
+
+		} catch (FileNotFoundException e) {
+			System.out.println("Target file/directory not found!");
+		}
 	}
 
 	public static void createForm(Sheet s, int numMW) {
@@ -218,6 +168,68 @@ public class Main {
 			c = r.getCell(0);
 			c.setCellValue(arr_item.get(i - (stdIndex + 2)));
 		}
+	}
+	
+	static void writeResult(ArrayList<Result> arr_result, SubInstance[] t_sub, int numMW){
+		Workbook wb = new XSSFWorkbook();
+		CellStyle style = wb.createCellStyle();
+		style.setBorderTop(BorderStyle.THIN);
+		style.setBorderBottom(BorderStyle.THIN);
+		style.setBorderLeft(BorderStyle.THIN);
+		style.setBorderRight(BorderStyle.THIN);
+		style.setTopBorderColor(IndexedColors.BLACK.getIndex());
+		style.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+		style.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+		style.setRightBorderColor(IndexedColors.BLACK.getIndex());
+		style.setVerticalAlignment(VerticalAlignment.CENTER);
+		String sheet = "Result";
+		Sheet s = wb.createSheet(sheet);
+		createForm(s, numMW);
 
+		for (int i = 0; i < 12; i++) {
+			Row row = s.getRow(stdIndex + i);
+			for (int i2 = 0; i2 < numMW + 1; i2++) {
+				Cell c = row.getCell(i2);
+				c.setCellStyle(style);
+			}
+		}
+
+		int curIndex = 1;
+		for (int i = 0; i < t_sub.length; i++) {
+			Row row = s.getRow(stdIndex);
+			Cell c = row.getCell(curIndex);
+			c.setCellValue(t_sub[i].getPath());
+			if (t_sub[i].getNumMid() > 1)
+				s.addMergedRegion(new CellRangeAddress(stdIndex,
+						stdIndex, curIndex, curIndex
+								+ t_sub[i].getNumMid() - 1));
+			for (int i2 = 0; i2 < t_sub[i].get_midList().length; i2++) {
+				Middleware m = t_sub[i].get_midList()[i2];
+				row = s.getRow(stdIndex + 1);
+				c = row.getCell(curIndex + i2);
+				c.setCellValue(m.getName() + "(" + m.get_type()
+						+ ")");
+			}
+			curIndex = curIndex + t_sub[i].getNumMid();
+		}
+		for (int i = 0; i < arr_result.size(); i++) {
+			arr_result.get(i).write(s, stdIndex + 2, i + 1);
+		}
+
+		s.autoSizeColumn(0);
+		for (int i = 1; i < numMW + 1; i++) {
+			// s.autoSizeColumn(i);
+			s.setColumnWidth(i, 30 * 256);
+		}
+
+		try {
+			String fileName = "mwConfigParser_result_"
+					+ (new SimpleDateFormat("yyyyMMdd"))
+							.format(new Date()) + ".xlsx";
+			OutputStream ops = new FileOutputStream(fileName);
+			wb.write(ops);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
