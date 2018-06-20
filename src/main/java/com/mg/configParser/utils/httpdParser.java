@@ -125,7 +125,7 @@ public class httpdParser extends parser {
 			root.findNodes("<Directory", arrConf);
 			for (confNode cn : arrConf) {
 				String op = cn.findValue("Options");
-				if (op.contains("Indexes")) {
+				if (op!=null&&op.contains("Indexes")) {
 					r.insert("dir listing", cn.name);
 					r.insert("dir listing", "\tOptions " + op);
 					r.insert("dir listing", "</Directory>");
@@ -190,7 +190,7 @@ public class httpdParser extends parser {
 			root.findNodes("<Directory", arrConf);
 			for (confNode cn : arrConf) {
 				String op = cn.findValue("Options");
-				if (op.contains("FollowSymLinks")) {
+				if (op!=null&&op.contains("FollowSymLinks")) {
 					r.insert("symlink", cn.name);
 					r.insert("symlink", "\tOptions " + op);
 					r.insert("symlink", "</Directory>");

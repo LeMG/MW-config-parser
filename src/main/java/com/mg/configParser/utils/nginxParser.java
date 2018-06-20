@@ -189,11 +189,13 @@ public class nginxParser extends parser {
 						+ cn.findValue("server_name") + ")");
 				r.insert("error page", "server(" + cn.findValue("server_name")
 						+ ")");
-				String[] error_group = cn.findValue("error_page").split(
-						"/split/");
-				for (String v : error_group) {
-					System.out.println("\t\t\t" + v);
-					r.insert("error page", "\terror_page " + v);
+				String ep = cn.findValue("error_page");
+				if(ep!=null){
+					String[] error_group = ep.split("/split/");
+					for (String v : error_group) {
+						System.out.println("\t\t\t" + v);
+						r.insert("error page", "\terror_page " + v);
+					}
 				}
 			}
 			arr_node.clear();

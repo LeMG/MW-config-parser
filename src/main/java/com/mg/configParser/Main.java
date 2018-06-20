@@ -17,7 +17,8 @@ import org.apache.poi.ss.usermodel.*;
 
 public class Main {
 	static int stdIndex = 4;
-	static MainWindow mw;
+	static int num_param = 0;
+	//static MainWindow mw;
 	public static void main(String[] args) {
 		if (args.length == 1 && args[0].compareTo("-t") == 0) {
 			args = new String[2];
@@ -25,11 +26,10 @@ public class Main {
 			args[1] = "/sdcard/JavaNIDE/TestService";
 		}
 
-		int num_param = args.length;
+		num_param = args.length;
 		switch (num_param) {
 		case 0:
-			mw = new MainWindow();
-			mw.setProgress("test");
+			MainWindow mw = new MainWindow();
 			System.out.println("Check usage with -h or -help");
 			return;
 		case 1:
@@ -93,24 +93,26 @@ public class Main {
 	}
 	
 	public static void parse(String path){
-		mw.clearProgress();
+		if(num_param==0)MainWindow.clearProgress();
 		try {
+			if(num_param==0)MainWindow.setProgress("Path : "+path);
 			Root r = new Root();
 			r.setPath(path);
 			ArrayList<Result> arr_result = new ArrayList<Result>();
 
 			SubInstance[] t_sub = r.get_subList();
 			int numMW = 0;
+			if(num_param==0)MainWindow.setProgress("Parsing config files...");
 			for (SubInstance cur_sub : t_sub) {
-				System.out.println("Host name : " + cur_sub.getPath());
+				if(num_param==0)MainWindow.setProgress("Host name : " + cur_sub.getPath());
 				Middleware[] t_mid = cur_sub.get_midList();
 				numMW += t_mid.length;
 				for (Middleware m : t_mid) {
-					System.out.println(m.getName() + "(" + m.get_type()
+					if(num_param==0)MainWindow.setProgress(m.getName() + "(" + m.get_type()
 							+ ")");
 					Result result = new Result(cur_sub.getPath(),
 							m.getName(), m.get_type());
-					parser p = null;
+					parser p = new parser(); 
 					switch (m.get_type()) {
 					case "Tomcat":
 						p = new TomcatParser(m);
@@ -122,12 +124,13 @@ public class Main {
 						p = new httpdParser(m);
 						break;
 					default:
+						p.r = new Result(m.getPath(),m.get_type());
 						System.out.println("Unknown Middle ware");
 					}
-					if (p != null)
-						arr_result.add(p.r);
+					arr_result.add(p.r);
 				}
 			}
+			if(num_param==0)MainWindow.setProgress("Parsing doen!");
 			writeResult(arr_result, t_sub, numMW);
 
 		} catch (FileNotFoundException e) {
@@ -226,9 +229,12 @@ public class Main {
 			String fileName = "mwConfigParser_result_"
 					+ (new SimpleDateFormat("yyyyMMdd"))
 							.format(new Date()) + ".xlsx";
+			if(num_param==0)MainWindow.setProgress("Creating Excel file : "+fileName);
 			OutputStream ops = new FileOutputStream(fileName);
 			wb.write(ops);
 		} catch (Exception e) {
+			if(num_param==0)MainWindow.setProgress("Exception occured during create Excel file");
+			if(num_param==0)MainWindow.setProgress(e.getMessage());
 			e.printStackTrace();
 		}
 	}
